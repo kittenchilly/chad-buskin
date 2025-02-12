@@ -22,7 +22,7 @@ const wordList = {
   "daveisafunnyguy":"Chadisafunnyguy",
   "davesprite":"Chadsprite",
   "davepeta":"Chadpeta",
-  "Davepetasprite":"Chadpetasprite",
+  "davepetasprite":"Chadpetasprite",
   "strider":"Buskin",
   "striders":"Buskins",
   
