@@ -8,7 +8,7 @@
 //  This will only detect full words, and not parts of words.
 //  This will only effect Homestuck
 //  Words higher on the word list will be replaced before the others
-//  This will not replicate quriks or casing when replacing title (Not that there are any)
+//  This will not replicate quirks or casing when replacing title (Not that there are any)
 //    If the substiution appears in page titles, make sure you format it how you would like it to appear in page titles
 //  For those of you who know RegExp, The key is taken as a regex expression
 //    Don't forget the \ character is an escape character in strings, so to use it in the expression you'll have to double it, i.e: \\
@@ -16,21 +16,35 @@
 //  This won't detect misspellings of words, you'll have to put those in manually
 
 const wordList = {
+  // tinyurl links (since they technically have a different text color so the quirk wouldnt get applied correctly)
+  "PUR3D4V3":"PUR3CH4D",
+  "THISISSOOOOD4V3":"THISISSOOOOCH4D",
+  "D4V34NDBRO43V3R":"CH4D4NDBRO43V3R",
+  "T34CHM3D4V3":"T34CHM3CH4D",
+  "SPOTONSTR1D3R":"SPOTONBUSK1N",
+  "T34CHM3YOURMOV3SD4V3":"T34CHM3YOURMOV3SCH4D",
+  "D4V3XD4V3":"CH4DXCH4D",
+  "dirkisthisyoU":"cainisthisyoU",
+  "DIRKTHISISuS":"CAINTHISISuS",
+  "daveisafunnyguy":"chadisafunnyguy",
+  
+  // stuff actually said
   "dave":"Chad",
   "daves":"Chads",
   "davecount":"Chadcount",
-  "daveisafunnyguy":"Chadisafunnyguy",
   "davesprite":"Chadsprite",
   "davepeta":"Chadpeta",
   "davepetasprite":"Chadpetasprite",
-  "strider":"Buskin",
-  "striders":"Buskins",
   
   "dirk":"Cain",
   "dirks":"Cains",
   "di-stri":"Ca-Busk",
-  "dirkisthisyou":"Cainisthisyou",
-  "dirkthisisus":"Cainthisisus",
+  
+  "strider":"Buskin",
+  "striders":"Buskins",
+  "striiiiiideeeerrrrrrrr":"Buuuuuuskiiiinnnnnnnn",
+  "striderfying":"Buskifying",
+  "striiiiiiider":"Buuuuuuuskin",
 }
 
 module.exports = {
@@ -57,8 +71,7 @@ module.exports = {
     }
 
     // For every page
-    for (let i = 1901; i < 9999; i++) {
-      const pageString = `00${i}`;
+    Object.keys(archive.mspa.story).forEach(pageString => {
       // if the page exists (prevents certain errors)
       if (archive.mspa.story[pageString]) {
 
@@ -87,7 +100,7 @@ module.exports = {
                 archive.mspa.story[pageString].title = archive.mspa.story[pageString].title.betterReplace(captitalise(wordMatch), captitalise(value), wordMatchIndex)
                 break;
               default:
-                archive.mspa.story[pageString].title = archive.mspa.story[pageString].title.betterReplace(wordMatch, value.toLowerCase(), wordMatchIndex)
+                archive.mspa.story[pageString].title = archive.mspa.story[pageString].title.betterReplace(wordMatch, value, wordMatchIndex)
                 break;
             } 
 
@@ -109,14 +122,15 @@ module.exports = {
             // Get Quirk Function & Case function
             const handles = matchString.substring(matchString.lastIndexOf("</span>")).match(handleRegexp)
             const colors = matchString.substring(matchString.lastIndexOf("</span>")).match(colorRegexp)
+            const notLink = matchString.substring(matchString.lastIndexOf("</span>")).match(colorRegexp)
             let quirkFunc = string => string
             let casingQuirk = string => null
             if (handles && colors) {
               const hexValue = colors.pop().slice(0, -1)
               const handle = handles.pop().slice(1, -1)
-              const qurikKey = handle + hexValue
-              quirkFunc = hexToTrollQurik[qurikKey] ? hexToTrollQurik[qurikKey] : string => string
-              casingQuirk = trollCasing[qurikKey] ? trollCasing[qurikKey] : string => null
+              const quirkKey = handle + hexValue
+              quirkFunc = hexToTrollQuirk[quirkKey] ? hexToTrollQuirk[quirkKey] : string => string
+              casingQuirk = trollCasing[quirkKey] ? trollCasing[quirkKey] : string => null
             }
 
             // Check casing and replace with value that has the same casing 
@@ -134,7 +148,7 @@ module.exports = {
                 archive.mspa.story[pageString].content = archive.mspa.story[pageString].content.betterReplace(captitalise(wordMatch), quirkFunc(captitalise(value), i), wordMatchIndex)
                 break;
               default:
-                archive.mspa.story[pageString].content = archive.mspa.story[pageString].content.betterReplace(wordMatch, quirkFunc(value.toLowerCase()), wordMatchIndex)
+                archive.mspa.story[pageString].content = archive.mspa.story[pageString].content.betterReplace(wordMatch, quirkFunc(value, i), wordMatchIndex)
                 break;
             } 
             
@@ -145,7 +159,7 @@ module.exports = {
         
 
       }
-    }
+    })
   }
 }
 
@@ -189,10 +203,10 @@ const subsitutionTable = {
   w: "(ww|wv|w)"
 }
 
-// Functions to convert text to qurik text
+// Functions to convert text to quirk text
 // Keys are chumHandle + hexvalue
 // Functions take in (text, pageNo.), use the Page No. for quirks that change throughout the story
-const hexToTrollQurik = {
+const hexToTrollQuirk = {
   // Aradia
   "AA#a10000": (string, page) => page < 3297 + 1901 ? string.replace(/o/g, "0") : string,
   "ARADIA#a10000": (string, page) => page < 3297 + 1901 ? string.replace(/o/g, "0") : string,
@@ -240,7 +254,8 @@ const hexToTrollQurik = {
   "MEENAH#77003c": string => string.replace(/H/g, ")(").replace(/E/g, "-E").replace(/ing/g, "in").replace(/ING/g, "IN"),
 
   // SPRITES
-  "TAVRISPRITE#0715cd": string => string.replace(/b/gi, "8").replace(/ate/gi, "8").replace(/ait/gi, "8")
+  "TAVRISPRITE#0715cd": string => string.replace(/b/gi, "8").replace(/ate/gi, "8").replace(/ait/gi, "8"),
+  "ERISOLSPRITE#4AC925": string => string.replace(/W/g, "WW").replace(/V/g, "VV").replace(/w/g, "ww").replace(/v/g, "vv").replace(/ing/g, "in").replace(/ING/g, "IN").replace(/s/gi, "2").replace(/i/gi, "ii"),
 }
 
 // Casing Functions
@@ -253,9 +268,9 @@ const trollCasing = {
   "KANAYA#008141": string => string.replace(/(^\w|\s\w)/g, m => m.toUpperCase()),
   // Calliope
   "UU#929292": string => string.toLowerCase().replace(/u/g, "U"),
-  "CALLIOPE#929292": string => string.toLowerCase().replace(/u/g, "U"),
+  "CALLIOPE#929292": string => string.replace(/u/g, "U"),
   // Caliborn
-  "UU#323232": string => string.toUpperCase().replace(/U/g, "u"),
+  "uu#323232": string => string.toUpperCase().replace(/U/g, "u"),
   "CALIBORN#323232": string => string.toUpperCase().replace(/U/g, "u"),
   // Gamzee
   "TC#2b0057": string => {
